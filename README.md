@@ -1,1 +1,1 @@
-backend of the project
+epilepsy project
