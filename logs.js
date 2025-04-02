@@ -32,6 +32,7 @@ const daily_logs =new mongoose.Schema({
         }
     },
 
+    
     nap:[{
         nap_sleep_time:{
             type: Date,
@@ -60,6 +61,25 @@ const daily_logs =new mongoose.Schema({
 //medical adherence part
 ///////////////////////////////////
 
+med_taken_on_time:{
+    type: Boolean,
+    required: true,
+},
+
+prm_med:{
+    quantity:Number,
+},
+
+missed_med: [{
+    medication_name: {
+        type: String,
+        required: true
+    },
+    quantity_missed: {
+        type: Number,
+        required: true
+    }
+}],
 
 
 
@@ -83,113 +103,61 @@ const daily_logs =new mongoose.Schema({
     },
 
     significant_event:{
-        eventToday: { type: Boolean, required: true }, 
-        severity: [{ 
-            type: Number, 
-            
-            validate: {
-                validator: function (value) {
-                    return this.eventToday || !value;
-                },
-                message: "Severity event should only be logged if eventToday is true."
-            }
-        }]
-    },
-
-    alcohol:{
-        alcoholToday: { type: Boolean, required: true }, 
-        alcoholType: [{ 
-            type: String, 
-            enum: ["Vodka", "Beer", "Whiskey", "Gin", "Wine","Other"],
-            quantity:Number,
-            validate: {
-                validator: function (value) {
-                    return this.alcoholToday || !value;
-                },
-                message: "Alcohol type should only be selected if alcoholToday is true."
-            }
-        }]
-    },
-
-    smoking:{
-        smokingToday: { type: Boolean, required: true }, 
-        smokingType: [{ 
-            type: String, 
-            enum: ["Icos", "Vape", "Cigar", "Cigarette", "Other"], 
-            quantity:Number,
-            validate: {
-                validator: function (value) {
-                    return this.smokingToday || !value;
-                },
-                message: "Smoking type should only be selected if smokingToday is true."
-            }
-        }]
-    },
-
-    narguileh:{
-        narguileToday: { type: Boolean, required: true }, 
-        quantity:{ 
-            type: Number, 
-                validate: {
-                validator: function (value) {
-                    return this.narguileToday || !value;
-                },
-                message: "Narguile quantity should only be selected if narguileToday is true."
-            }
+        severity: {
+            type: Number,
+            min:0,
+            max:10
         }
     },
 
+    alcohol:[{
+        alcoholType: { 
+            type: String, 
+            enum: ["Vodka", "Beer", "Whiskey", "Gin", "Wine","Arak","Other"],
+        },
+        quantity:Number,
+    }],
+
+    smoking:[{
+        smokingType: { 
+            type: String, 
+            enum: ["Icos", "Vape", "Cigar", "Cigarette", "Other"], 
+        },
+        quantity:Number,
+    }],
+
+    narguileh:{ 
+        quantity:Number,
+    },
+
     Caffeine:{
-        CaffeineToday: { type: Boolean, required: true }, 
         CaffeineType: [{ 
             type: String, 
-            enum: ["Coffee", "Tea", "Other"], 
+            enum: ["Coffee", "Tea"], 
             quantity:Number,
-            validate: {
-                validator: function (value) {
-                    return this.CaffeineToday || !value;
-                },
-                message: "Caffeine details should only be selected if CaffeineToday is true."
-            }
         }]
     },
 
     energy_drinks:{
-        energy_drinks_Today: { type: Boolean, required: true }, 
         quantity: { 
             type: Number,  
-            validate: {
-                validator: function (value) {
-                    return this.energy_drinks_Today || !value;
-                },
-                message: "Energy drinks quantity should only be selected if energy_drinks_Today is true."
-            }
         }
     },
 
-    recreational_drug_use :{
-        recreational_drug_use_Today: { type: Boolean, required: true }, 
-        Details:{
+    recreational_drug_use :[{
             type:String,
-            quantity:Number,
-            validate: {
-                validator: function (value) {
-                    return this.recreational_drug_use_Today || !value;
-                },
-                message: "Recreational drug use drinks details should only be selected if recreational_drug_use_Today is true."
-            }
-        }
-        },
+            quantity:Number
+        }],
 
         ///////////////Food///////////
 
-        meal_frequency:{
+    meal_frequency:{
             type:Number,
             min:0,
             required:true
         },
 
-        water:{
+    water:{
             type:Number,
             min:0,
             required:true
@@ -198,33 +166,26 @@ const daily_logs =new mongoose.Schema({
     
 
 
-
-
-    exercise:{
-        exerciseToday: { type: Boolean, required: true }, // Yes/No
-        exercisedetails: [{ 
+        exercise: [{ 
             exercisetype:{
                 type: String, 
-                enum: ["Walking", "Running", "Gym", "Swimming", "Other"]
+                enum: ["Walking", "Running", "Gym", "Swimming","Yoga","Boxing", "Other"]
                 }, 
             intensity:{
                 type:String,
                 enum:["Low","Moderate","High"]
                 },
-
             duration:Number,
-            
-            validate: {
-                validator: function (value) {
-                    // If exerciseToday is false, exerciseType must be empty
-                    return this.exerciseToday || !value;
-                },
-                message: "Exercise Details should only be selected if exerciseToday is true."
-            }
-        }]
-    }
+        }],
+    
 
 
 })
-
+// Validation function to check if missed_med contains only valid medications
+daily_logs.path('missed_med').validate(async function(value) {
+    const user = await mongoose.model('user').findById(this.userId);
+    const validMedications = user.medication.map(med => med.medication_name);
+    const invalidMedications = value.filter(med => !validMedications.includes(med.medication_name));
+    return invalidMedications.length === 0;
+}, 'Invalid medication in missed_med');
 module.exports = mongoose.model("logs", daily_logs);

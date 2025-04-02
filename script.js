@@ -7,11 +7,11 @@ run()
 async function run(){
     try{
         const user= await User.create({
-            name:"Elie",
+            first_name:"Elie",
             last_name:"Saade",
             email:"123sa@S.com",
             gender:"Male",
-            age:12,
+            date_of_birth:"10/10/2003",
             password:"sad",
             epilepsy_type:"Focal",
             medication:[{
