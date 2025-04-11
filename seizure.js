@@ -7,6 +7,7 @@ const seizureSchema =new mongoose.Schema([{
     seizure_day:{
         type:Date,
         unique:true
+        ///?
     },
 
     seizure_type:{
@@ -16,10 +17,11 @@ const seizureSchema =new mongoose.Schema([{
 
     seizure_duration:Number,
 
-    aura_symptoms:boolean,
+    aura_symptoms:{
+        type:Boolean},
 
     postical_symptoms:[{
-        name:{
+        name_symp:{
             type:String,
             enum:["Fatigue", "Confusion", "Headache", "Other"]
         },
@@ -27,11 +29,11 @@ const seizureSchema =new mongoose.Schema([{
         other_symptoms: {
             type: String,
             required: function () {
-                return this.medication_name === "other";
+                return this.medication_name === "Other";
             },
             validate: {
                 validator: function (value) {
-                    if (this.name === "other" && (!value || value.trim() === "")) {
+                    if (this.name === "Other" && (!value || value.trim() === "")) {
                         return false;
                     }
                     return true;

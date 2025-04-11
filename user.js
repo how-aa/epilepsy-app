@@ -53,6 +53,7 @@ const userSchema =new mongoose.Schema({
         type:String,
         required: true 
     },
+
     epilepsy_type:{
         type: String,
         required:true,
@@ -144,16 +145,16 @@ const userSchema =new mongoose.Schema({
         other_medication_name: {
             type: String,
             required: function () {
-                return this.medication_name === "other";
+                return this.medication_name === "Other";
             },
             validate: {
                 validator: function (value) {
-                    if (this.medication_name === "other" && (!value || value.trim() === "")) {
+                    if (this.medication_name === "Other" && (!value || value.trim() === "")) {
                         return false;
                     }
                     return true;
                 },
-                message: "Please provide the name of the medication when 'other' is selected."
+                message: "Please provide the name of the medication when 'Other' is selected."
             }
         },
 
